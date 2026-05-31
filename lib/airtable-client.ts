@@ -35,7 +35,14 @@ export const REMOVAL_LOG_F = {
   inventoryRowIds: 'fld7swnssuu6kjkZl',
 } as const;
 
-export async function airtableFetch(url: string, options: RequestInit = {}): Promise<any> {
+type FetchOptions = Omit<RequestInit, 'headers'> & {
+  headers?: Record<string, string>;
+};
+
+export async function airtableFetch<T = unknown>(
+  url: string,
+  options: FetchOptions = {}
+): Promise<T> {
   const pat = process.env.AIRTABLE_PAT;
   if (!pat) throw new Error('AIRTABLE_PAT environment variable is not configured');
 
@@ -44,13 +51,19 @@ export async function airtableFetch(url: string, options: RequestInit = {}): Pro
     headers: {
       Authorization: `Bearer ${pat}`,
       'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string>),
+      ...options.headers,
     },
   });
 
-  const json = (await res.json()) as any;
-  if (!res.ok) {
-    throw new Error(json.error?.message || `Airtable error ${res.status}`);
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
+    // Non-JSON body (e.g. HTML from CloudFlare 502)
   }
-  return json;
+  if (!res.ok) {
+    const msg = (json as any)?.error?.message;
+    throw new Error(msg ?? `Airtable error ${res.status}`);
+  }
+  return json as T;
 }

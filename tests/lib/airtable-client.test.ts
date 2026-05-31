@@ -77,6 +77,18 @@ describe('airtableFetch', () => {
       'AIRTABLE_PAT'
     );
   });
+
+  it('throws generic status error when response body is not valid JSON', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      json: () => Promise.reject(new SyntaxError('Unexpected token < ...')),
+    });
+
+    await expect(airtableFetch('https://api.airtable.com/v0/test')).rejects.toThrow(
+      'Airtable error 502'
+    );
+  });
 });
 
 describe('constants', () => {
