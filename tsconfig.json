@@ -10,6 +10,6 @@
     "moduleResolution": "node16",
     "outDir": "dist"
   },
-  "include": ["api", "lib", "tests"],
+  "include": ["api", "lib"],
   "exclude": ["node_modules", ".vercel"]
 }
