@@ -145,6 +145,13 @@ describe('POST /api/inventory/add', () => {
     await handler(req, res);
     expect(res.status).toHaveBeenCalledWith(400);
   });
+
+  it('returns 400 when quantity is zero or not an integer', async () => {
+    const req = { method: 'POST', body: { ...validBody, quantity: 0 } } as VercelRequest;
+    const res = makeRes();
+    await handler(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
 });
 
 // ---- POST /api/inventory/remove ----
@@ -208,6 +215,13 @@ describe('POST /api/inventory/remove', () => {
 
   it('returns 400 when quantityToRemove is not a number', async () => {
     const req = { method: 'POST', body: { mpcRecordId: 'mpc1', location: 'HQ', quantityToRemove: 'five' } } as VercelRequest;
+    const res = makeRes();
+    await handler(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('returns 400 when quantityToRemove is zero', async () => {
+    const req = { method: 'POST', body: { ...validBody, quantityToRemove: 0 } } as VercelRequest;
     const res = makeRes();
     await handler(req, res);
     expect(res.status).toHaveBeenCalledWith(400);
