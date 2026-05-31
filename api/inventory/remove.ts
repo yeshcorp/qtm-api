@@ -16,8 +16,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   const { mpcRecordId, location, quantityToRemove, specificLotId } = req.body ?? {};
-  if (!mpcRecordId || !location || quantityToRemove == null) {
-    res.status(400).json({ error: 'mpcRecordId, location, and quantityToRemove are required' });
+  if (!mpcRecordId || !location || quantityToRemove == null || typeof quantityToRemove !== 'number' || quantityToRemove < 0) {
+    res.status(400).json({ error: 'mpcRecordId, location, and quantityToRemove (non-negative number) are required' });
     return;
   }
 

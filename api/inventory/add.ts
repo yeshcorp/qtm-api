@@ -15,8 +15,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   const { itemName, mpcRecordId, location, quantity, expirationDate, notes } = req.body ?? {};
-  if (!itemName || !mpcRecordId || !location || quantity == null || !expirationDate) {
-    res.status(400).json({ error: 'itemName, mpcRecordId, location, quantity, and expirationDate are required' });
+  if (!itemName || !mpcRecordId || !location || quantity == null || typeof quantity !== 'number' || !expirationDate) {
+    res.status(400).json({ error: 'itemName, mpcRecordId, location, quantity (number), and expirationDate are required' });
     return;
   }
 
