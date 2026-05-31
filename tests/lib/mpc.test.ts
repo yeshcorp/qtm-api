@@ -92,6 +92,19 @@ describe('lookupByBarcode', () => {
     const result = await lookupByBarcode('ABC');
     expect(result?.purchaseFrom).toBe('Amazon Business');
   });
+
+  it('skips records where barcode field is null or undefined without throwing', async () => {
+    mockFetch.mockResolvedValueOnce({
+      records: [
+        { id: 'r1', fields: { [MPC_F.barcode]: null, [MPC_F.itemName]: 'X', [MPC_F.brand]: 'Y' } },
+        { id: 'r2', fields: { [MPC_F.itemName]: 'X', [MPC_F.brand]: 'Y' } },
+        makeRecord('r3', 'TARGET'),
+      ],
+    });
+
+    const result = await lookupByBarcode('TARGET');
+    expect(result?.id).toBe('r3');
+  });
 });
 
 describe('createMpcRecord', () => {

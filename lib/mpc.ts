@@ -60,7 +60,7 @@ export async function createMpcRecord(barcode: string, itemName: string): Promis
 }
 
 export async function updatePurchaseFrom(mpcRecordId: string, purchaseFrom: string): Promise<void> {
-  await airtableFetch<CreateResponse>(`${BASE_URL}/${TABLE.MPC}/${mpcRecordId}`, {
+  await airtableFetch<unknown>(`${BASE_URL}/${TABLE.MPC}/${mpcRecordId}`, {
     method: 'PATCH',
     body: JSON.stringify({ fields: { [MPC_F.purchaseFrom]: purchaseFrom } }),
   });
