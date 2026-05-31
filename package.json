@@ -9,8 +9,7 @@
     "dev": "vercel dev",
     "test": "jest",
     "test:watch": "jest --watch",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
