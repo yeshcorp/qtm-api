@@ -54,6 +54,13 @@ describe('POST /api/removal-log', () => {
     expect(res.status).toHaveBeenCalledWith(400);
   });
 
+  it('returns 400 when quantityRemoved is zero or negative', async () => {
+    const req = { method: 'POST', body: { ...validBody, quantityRemoved: 0 } } as VercelRequest;
+    const res = makeRes();
+    await handler(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
   it('returns 201 on success and passes data to logRemoval', async () => {
     mockLog.mockResolvedValueOnce(undefined);
     const req = { method: 'POST', body: validBody } as VercelRequest;

@@ -21,11 +21,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   if (
     !mpcRecordId || !location ||
-    quantityRemoved == null || typeof quantityRemoved !== 'number' ||
-    !reason || !lotExpirationDates || !inventoryRowIds
+    quantityRemoved == null || typeof quantityRemoved !== 'number' || quantityRemoved <= 0 ||
+    !reason ||
+    !Array.isArray(lotExpirationDates) || lotExpirationDates.length === 0 ||
+    !Array.isArray(inventoryRowIds) || inventoryRowIds.length === 0
   ) {
     res.status(400).json({
-      error: 'mpcRecordId, location, quantityRemoved (number), reason, lotExpirationDates, and inventoryRowIds are required',
+      error: 'mpcRecordId, location, quantityRemoved (positive number), reason, lotExpirationDates, and inventoryRowIds are required',
     });
     return;
   }
