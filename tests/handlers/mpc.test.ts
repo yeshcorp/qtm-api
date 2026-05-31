@@ -109,6 +109,13 @@ describe('POST /api/mpc', () => {
     await handler(req, res);
     expect(res.status).toHaveBeenCalledWith(502);
   });
+
+  it('returns 405 for non-POST methods', async () => {
+    const req = { method: 'GET', body: {} } as VercelRequest;
+    const res = makeRes();
+    await handler(req, res);
+    expect(res.status).toHaveBeenCalledWith(405);
+  });
 });
 
 // ---- PATCH /api/mpc/[id]/purchase-from ----
