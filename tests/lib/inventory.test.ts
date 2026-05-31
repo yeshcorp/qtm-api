@@ -213,6 +213,16 @@ describe('removeInventoryFEFO', () => {
     mockLots([{ id: 'lot1', qty: 3 }]);
     await expect(removeInventoryFEFO('mpc1', 'HQ', 10)).rejects.toThrow('Insufficient inventory');
   });
+
+  it('returns empty result when quantityToRemove is 0', async () => {
+    mockLots([{ id: 'lot1', qty: 5, exp: '2025-01-01' }]);
+
+    const result = await removeInventoryFEFO('mpc1', 'HQ', 0);
+    expect(result.totalRemoved).toBe(0);
+    expect(result.decrementedRows).toHaveLength(0);
+    // Only one fetch call: the fetchInventoryLots scan — no mutations
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('logRemoval', () => {
@@ -241,7 +251,7 @@ describe('logRemoval', () => {
     expect(body.fields[REMOVAL_LOG_F.inventoryRowIds]).toBe('row1, row2');
   });
 
-  it('omits notes field content when notes is undefined', async () => {
+  it('sends empty string for notes when notes is undefined', async () => {
     mockFetch.mockResolvedValueOnce({ id: 'log2' });
 
     await logRemoval({

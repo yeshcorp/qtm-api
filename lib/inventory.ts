@@ -1,10 +1,17 @@
 import { airtableFetch, BASE_URL, TABLE, INV_F, REMOVAL_LOG_F } from './airtable-client';
 import type { InventoryRecord, InventoryLot, NewInventoryData, RemovalLogData, RemovalResult } from './types';
 
+type InvPage = {
+  records: Array<{ id: string; createdTime: string; fields: Record<string, unknown> }>;
+  offset?: string;
+};
+
 export async function fetchRecentInventory(): Promise<InventoryRecord[]> {
   let offset: string | undefined;
-  const allRecords: any[] = [];
+  const allRecords: Array<{ id: string; createdTime: string; fields: Record<string, unknown> }> = [];
 
+  // Must paginate all records because createdTime is record metadata, not a sortable Airtable field.
+  // Airtable's sort/maxRecords params cannot target it — we sort client-side after fetching all pages.
   do {
     const params = new URLSearchParams({ pageSize: '100', returnFieldsByFieldId: 'true' });
     params.append('fields[]', INV_F.itemName);
@@ -12,19 +19,19 @@ export async function fetchRecentInventory(): Promise<InventoryRecord[]> {
     params.append('fields[]', INV_F.quantity);
     params.append('fields[]', INV_F.expirationDate);
     if (offset) params.append('offset', offset);
-    const data = await airtableFetch(`${BASE_URL}/${TABLE.INVENTORY}?${params}`);
-    allRecords.push(...(data as any).records);
-    offset = (data as any).offset;
+    const data = await airtableFetch<InvPage>(`${BASE_URL}/${TABLE.INVENTORY}?${params}`);
+    allRecords.push(...data.records);
+    offset = data.offset;
   } while (offset);
 
   allRecords.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
 
-  return allRecords.slice(0, 10).map((r: any): InventoryRecord => ({
+  return allRecords.slice(0, 10).map((r): InventoryRecord => ({
     id: r.id,
-    itemName: r.fields[INV_F.itemName] || 'Unknown',
-    location: r.fields[INV_F.location] || '',
-    quantity: r.fields[INV_F.quantity] || 0,
-    expirationDate: r.fields[INV_F.expirationDate] || '',
+    itemName: (r.fields[INV_F.itemName] as string) || 'Unknown',
+    location: (r.fields[INV_F.location] as string) || '',
+    quantity: (r.fields[INV_F.quantity] as number) || 0,
+    expirationDate: (r.fields[INV_F.expirationDate] as string) || '',
   }));
 }
 
@@ -70,32 +77,8 @@ async function findMatchingLot(
   location: string,
   expirationDate: string
 ): Promise<{ id: string; quantity: number } | null> {
-  let offset: string | undefined;
-
-  do {
-    const params = new URLSearchParams({ pageSize: '100', returnFieldsByFieldId: 'true' });
-    params.append('fields[]', INV_F.masterProduct);
-    params.append('fields[]', INV_F.location);
-    params.append('fields[]', INV_F.expirationDate);
-    params.append('fields[]', INV_F.quantity);
-    if (offset) params.append('offset', offset);
-    const data = await airtableFetch(`${BASE_URL}/${TABLE.INVENTORY}?${params}`);
-
-    for (const record of (data as any).records) {
-      const linkedIds: string[] = record.fields[INV_F.masterProduct] || [];
-      if (
-        Array.isArray(linkedIds) &&
-        linkedIds.includes(mpcRecordId) &&
-        record.fields[INV_F.location] === location &&
-        record.fields[INV_F.expirationDate] === expirationDate
-      ) {
-        return { id: record.id, quantity: record.fields[INV_F.quantity] || 0 };
-      }
-    }
-    offset = (data as any).offset;
-  } while (offset);
-
-  return null;
+  const lots = await fetchInventoryLots(mpcRecordId, location);
+  return lots.find(l => l.expirationDate === expirationDate) ?? null;
 }
 
 export async function submitInventory(data: NewInventoryData): Promise<void> {
