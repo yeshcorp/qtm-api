@@ -1,0 +1,20 @@
+{
+  "name": "qtm-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "@vercel/node": "^3.2.25",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "typescript": "^5.4.5",
+    "vercel": "^34.0.0"
+  }
+}
