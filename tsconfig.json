@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
+    "module": "ES2020",
     "lib": ["ES2020"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": ".vercel/output"
+    "moduleResolution": "bundler",
+    "outDir": "dist"
   },
-  "include": ["."],
+  "include": ["api", "lib", "tests"],
   "exclude": ["node_modules", ".vercel"]
 }
