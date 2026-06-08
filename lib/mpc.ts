@@ -46,6 +46,33 @@ export async function lookupByBarcode(barcode: string): Promise<MpcRecord | null
   return null;
 }
 
+export async function searchByName(query: string): Promise<Array<{ id: string; itemName: string; brand: string; purchaseFrom: string | null }>> {
+  const needle = query.trim().toLowerCase();
+  const results: Array<{ id: string; itemName: string; brand: string; purchaseFrom: string | null }> = [];
+  let offset: string | undefined;
+
+  do {
+    const params = new URLSearchParams({ pageSize: '100', returnFieldsByFieldId: 'true' });
+    if (offset) params.append('offset', offset);
+    const data = await airtableFetch<AirtableResponse<AirtableRecord>>(`${BASE_URL}/${TABLE.MPC}?${params}`);
+
+    for (const record of data.records) {
+      const name = record.fields[MPC_F.itemName];
+      if (typeof name === 'string' && name.trim().toLowerCase().includes(needle)) {
+        results.push({
+          id: record.id,
+          itemName: name,
+          brand: (record.fields[MPC_F.brand] as string) || '',
+          purchaseFrom: (record.fields[MPC_F.purchaseFrom] as string | null) || null,
+        });
+      }
+    }
+    offset = data.offset;
+  } while (offset);
+
+  return results;
+}
+
 export async function createMpcRecord(barcode: string, itemName: string): Promise<string> {
   const data = await airtableFetch<CreateResponse>(`${BASE_URL}/${TABLE.MPC}`, {
     method: 'POST',
