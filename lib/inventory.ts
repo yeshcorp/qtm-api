@@ -78,7 +78,9 @@ async function findMatchingLot(
   expirationDate: string
 ): Promise<{ id: string; quantity: number } | null> {
   const lots = await fetchInventoryLots(mpcRecordId, location);
-  return lots.find(l => l.expirationDate === expirationDate) ?? null;
+  const normalize = (v: string | null | undefined) => (v ?? '').trim();
+  const target = normalize(expirationDate);
+  return lots.find(l => normalize(l.expirationDate) === target) ?? null;
 }
 
 export async function submitInventory(data: NewInventoryData): Promise<void> {
